@@ -1,0 +1,9 @@
+rootProject.name = 'java-server-practice'
+
+include 'openapi',
+        'ui',
+        'api-tests',
+        'stage1-sockets',
+        'stage2-servlet-war',
+        'stage3-servlet-embedded',
+        'stage4-spring-boot'

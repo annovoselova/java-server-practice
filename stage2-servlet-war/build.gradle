@@ -1,0 +1,6 @@
+plugins { id 'java'; id 'war' }
+dependencies {
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0' // предоставляет контейнер
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+}
+tasks.war { archiveFileName = 'ROOT.war' } // деплой на '/'

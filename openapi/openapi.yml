@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info: { title: Notes API, version: 1.0.0 }
+servers: [{ url: http://localhost:8080 }]
+paths:
+  /health:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties: { status: { type: string } }
+  /notes:
+    get:
+      responses:
+        '200':
+          description: list
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Note' } }
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/NoteCreate' } }
+      responses:
+        '201':
+          description: created
+          headers: { Location: { schema: { type: string } } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Note' }
+  /notes/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Note' } } } }
+        '404': { description: not found }
+    put:
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/NoteUpdate' } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/Note' } } } }
+        '404': { description: not found }
+    delete:
+      responses:
+        '204': { description: deleted }
+        '404': { description: not found }
+components:
+  schemas:
+    Note:
+      type: object
+      required: [id, title, createdAt]
+      properties:
+        id: { type: string }
+        title: { type: string, minLength: 1, maxLength: 100 }
+        content: { type: string, nullable: true, maxLength: 200 }
+        createdAt: { type: string, format: date-time }
+    NoteCreate:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 100 }
+        content: { type: string, nullable: true, maxLength: 200 }
+    NoteUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 100 }
+        content: { type: string, nullable: true, maxLength: 200 }

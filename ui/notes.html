@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Notes API Playground</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        :root { --gap: 12px; }
+        body { font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif; margin: 24px; max-width: 900px; }
+        h1 { margin: 0 0 12px; }
+        .row { display: flex; flex-wrap: wrap; gap: var(--gap); align-items: center; margin: 6px 0; }
+        input, button { font: inherit; padding: .45rem .6rem; }
+        input[type="text"] { min-width: 260px; }
+        .grid { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; }
+        .card { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+        .muted { color: #6b7280; }
+        .bar { display:flex; gap: 8px; align-items:center; }
+        .error { color: #b91c1c; }
+        .ok { color: #047857; }
+        .small { font-size: 12px; }
+        .spacer { flex: 1; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    </style>
+</head>
+<body>
+<h1>Notes API Playground</h1>
+
+<div class="row card">
+    <label>Base URL:
+        <input id="base" type="text" value="http://localhost:8080" />
+    </label>
+    <button id="btnPing">Проверить /health</button>
+    <span id="health" class="muted">—</span>
+    <span class="spacer"></span>
+    <a id="swagger" href="#" target="_blank" class="small mono muted" style="text-decoration:none;">/swagger</a>
+</div>
+
+<div class="row card">
+    <input id="title" type="text" placeholder="title (required)" />
+    <input id="content" type="text" placeholder="content (optional)" />
+    <button id="btnCreate">Создать</button>
+    <span id="createMsg" class="small muted"></span>
+</div>
+
+<div class="row">
+    <div class="bar">
+        <button id="btnReload">Обновить список</button>
+        <span id="listMsg" class="small muted"></span>
+    </div>
+</div>
+
+<div id="list" class="grid"></div>
+
+<template id="noteRow">
+    <div class="card"></div>
+    <button class="btnGet">Get</button>
+    <button class="btnEdit">Edit</button>
+    <button class="btnDel">Delete</button>
+</template>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+    const base = () => $('base').value.replace(/\/+$/, '');
+
+    const jfetch = async (path, opts={}) => {
+      const res = await fetch(base() + path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...opts
+      });
+      let json = null;
+      try { json = (res.status === 204) ? null : await res.json(); } catch (_) {}
+      return { ok: res.ok, status: res.status, json, headers: res.headers };
+    };
+
+    const setMsg = (el, text, ok=true) => {
+      el.textContent = text || '';
+      el.classList.remove('ok', 'error', 'muted');
+      el.classList.add(text ? (ok ? 'ok' : 'error') : 'muted');
+    };
+
+    async function ping() {
+      const r = await jfetch('/health');
+      setMsg($('health'), r.ok ? 'OK' : `ERR ${r.status}`, r.ok);
+      // обновим ссылку на swagger (для Boot-проекта удобно)
+      $('swagger').href = base() + '/swagger';
+    }
+
+    function noteText(n) {
+      const c = n.content ?? '';
+      const t = n.title ?? '(no title)';
+      const d = n.createdAt ? ` · ${n.createdAt}` : '';
+      return `${t}${c ? ' — ' + c : ''}${d}`;
+    }
+
+    async function loadList() {
+      setMsg($('listMsg'), 'Загрузка…', true);
+      const root = $('list');
+      root.innerHTML = '';
+      const r = await jfetch('/notes');
+      if (!r.ok) { setMsg($('listMsg'), `Ошибка загрузки: ${r.status}`, false); return; }
+      const notes = Array.isArray(r.json) ? r.json : [];
+      setMsg($('listMsg'), `Всего: ${notes.length}`, true);
+      const tpl = $('noteRow').content;
+      notes.forEach(n => {
+        const frag = tpl.cloneNode(true);
+        const box = frag.querySelector('.card');
+        const btnGet = frag.querySelector('.btnGet');
+        const btnEdit = frag.querySelector('.btnEdit');
+        const btnDel = frag.querySelector('.btnDel');
+
+        box.textContent = noteText(n);
+
+        btnGet.onclick = async () => {
+          const r = await jfetch('/notes/' + n.id);
+          if (!r.ok) { alert('GET error ' + r.status); return; }
+          alert(JSON.stringify(r.json, null, 2));
+        };
+
+        btnEdit.onclick = async () => {
+          const newTitle = prompt('New title (leave empty to keep):', n.title ?? '');
+          const newContent = prompt('New content (leave empty to keep):', n.content ?? '');
+          const body = {};
+          if (newTitle !== null && newTitle !== '') body.title = newTitle;
+          if (newContent !== null && newContent !== '') body.content = newContent;
+          const r = await jfetch('/notes/' + n.id, { method: 'PUT', body: JSON.stringify(body) });
+          if (!r.ok) { alert('PUT error ' + r.status); return; }
+          loadList();
+        };
+
+        btnDel.onclick = async () => {
+          if (!confirm('Delete note?')) return;
+          const r = await jfetch('/notes/' + n.id, { method: 'DELETE' });
+          if (!r.ok && r.status !== 204) { alert('DELETE error ' + r.status); return; }
+          loadList();
+        };
+
+        root.appendChild(frag);
+      });
+    }
+
+    async function createNote() {
+      const title = $('title').value.trim();
+      const content = $('content').value.trim();
+      if (!title) { setMsg($('createMsg'), 'title is required', false); return; }
+      const r = await jfetch('/notes', { method: 'POST', body: JSON.stringify({ title, content }) });
+      if (!r.ok) { setMsg($('createMsg'), 'create error ' + r.status, false); return; }
+      $('title').value = ''; $('content').value = '';
+      setMsg($('createMsg'), 'создано', true);
+      loadList();
+    }
+
+    // Events
+    $('btnPing').onclick = ping;
+    $('btnReload').onclick = loadList;
+    $('btnCreate').onclick = createNote;
+    $('base').addEventListener('change', () => { ping(); loadList(); });
+
+    // Initial
+    ping().then(loadList);
+</script>
+</body>
+</html>

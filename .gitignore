@@ -1,0 +1,56 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & dumps
+*.log
+*.tmp
+*.swp
+hs_err_pid*
+replay_pid*
+
+# Java / Build outputs
+*.class
+/build/
+/**/build/
+/out/
+/bin/
+/target/
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+.gradle-cache/
+.gradle-local/
+
+# IntelliJ IDEA / JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.settings/
+.loadpath
+
+# VS Code
+.vscode/
+
+# Coverage / reports
+jacoco.exec
+/jacoco/
+/**/jacoco/
+/**/reports/
+/**/test-results/
+
+# Packaging artifacts (built, not sources)
+*.jar
+*.war
+*.ear
+
+# Misc
+*.orig
+*.rej

@@ -1,0 +1,11 @@
+plugins { id 'java' }
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'io.rest-assured:rest-assured:5.5.0'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+}
+test {
+    useJUnitPlatform()
+    systemProperty 'baseUrl', System.getProperty('baseUrl', 'http://localhost:8080')
+}
