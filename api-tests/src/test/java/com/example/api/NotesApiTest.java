@@ -50,9 +50,9 @@ class NotesApiTest {
     @Test @Order(5)
     void update() {
         given().baseUri(BASE).contentType(ContentType.JSON)
-                .body(Map.of("content", "updated"))
+                .body(Map.of("title", "updatedTitle", "content", "updated"))
                 .when().put("/notes/" + id)
-                .then().statusCode(200).body("content", equalTo("updated"));
+                .then().statusCode(200).body("title", equalTo("updatedTitle"), "content", equalTo("updated"));
     }
 
     @Test @Order(6)

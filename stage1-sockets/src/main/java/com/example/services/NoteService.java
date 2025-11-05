@@ -1,86 +1,84 @@
 package com.example.services;
 
-import org.jetbrains.annotations.Nullable;
+import com.example.exceptions.NoteNotFoundException;
+import com.example.repository.NoteRepository;
 import com.example.models.Note;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Сервис для работы с заметками (Note)
+ * Сервис для работы с заметками (Note).
  *
  * <p>Предоставляет методы для создания, получения, обновления и удаления заметок</p>
  */
 public class NoteService {
 
-    private static final Map<String, Note> notes = new HashMap<>();
+    private final NoteRepository noteRepository;
 
-    /**
-     * Удаляет заметку по её идентификатору
-     *
-     * @param id идентификатор заметки
-     * @return true, если заметка была удалена, false если заметка не найдена
-     */
-    public static boolean deleteNote(String id) {
-        Note note = getNoteById(id);
-        if (note != null) {
-            notes.remove(id);
-            return true;
-        }
-        return false;
+    public NoteService(NoteRepository noteRepository) {
+        this.noteRepository = noteRepository;
     }
 
     /**
-     * Обновляет заметку по идентификатору
+     * Удаляет заметку по её идентификатору.
      *
      * @param id идентификатор заметки
-     * @param title заголовок заметки
-     * @param content содержимое заметки
-     * @return обновлённый объект {@link Note}, если заметка не найдена - {@code null}
+     * @throws NoteNotFoundException если заметка с указанным идентификатором не найдена
      */
-    @Nullable
-    public static Note updateNote(String id, String title, String content) {
-        Note note = getNoteById(id);
-        if (note != null) {
-            if (title != null) {
-                note.setTitle(title);
-            }
-            if (content != null) {
-                note.setContent(content);
-            }
-        }
-        return note;
+    public void deleteNote(String id) {
+        noteRepository.findByIdOrThrow(id);
+        noteRepository.deleteById(id);
     }
 
     /**
-     * Возвращает заметку по идентификатору
+     * Обновляет заметку по идентификатору.
      *
      * @param id идентификатор заметки
-     * @return объект {@link Note}, если заметка не найдена - {@code null}
+     * @param noteTemplate объект с параметрами заметки для редактирования
+     * @return обновлённый объект {@link Note}
+     * @throws NoteNotFoundException если заметка с указанным идентификатором не найдена
      */
-    @Nullable
-    public static Note getNoteById(String id) {
-        return notes.get(id);
+    public Note updateNote(String id, Note noteTemplate) {
+        Note oldNote = noteRepository.findByIdOrThrow(id);
+        noteRepository.deleteById(id);
+
+        Note updatedNote = new Note(id, noteTemplate.title(), noteTemplate.content(), oldNote.createdAt());
+        noteRepository.save(updatedNote);
+        return updatedNote;
     }
 
     /**
-     * Создаёт заметку
+     * Возвращает заметку по идентификатору.
      *
-     * @param title заголовок заметки
-     * @param content содержимое заметки
+     * @param id идентификатор заметки
+     * @return объект {@link Note}
+     * @throws NoteNotFoundException если заметка с указанным идентификатором не найдена
+     */
+    public Note getNoteById(String id) {
+        return noteRepository.findByIdOrThrow(id);
+    }
+
+    /**
+     * Создаёт заметку.
+     *
+     * @param noteTemplate объект с параметрами заметки для создания
      * @return созданный объект {@link Note}
      */
-    public static Note createNote(String title, String content) {
+    public Note createNote(Note noteTemplate) {
         String id = UUID.randomUUID().toString();
-        Note note = new Note(id, title, content, Instant.now().toString());
-        notes.put(id, note);
+        Note note = new Note(id, noteTemplate.title(), noteTemplate.content(), LocalDateTime.now());
+        noteRepository.save(note);
         return note;
     }
+
     /**
-     * Возвращает список всех существующих заметок
+     * Возвращает список всех существующих заметок.
      *
      * @return список объектов {@link Note}
      */
-    public static List<Note> getNotes() {
-        return new ArrayList<Note>(notes.values());
+    public List<Note> getNotes() {
+        return noteRepository.findAll();
     }
+
 }
