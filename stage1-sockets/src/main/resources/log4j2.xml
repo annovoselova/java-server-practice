@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <!-- Вывод логов в консоль -->
+        <Console name="CONSOLE">
+            <PatternLayout pattern="%d [%t] %p %c - %m%n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <!-- Основной логгер -->
+        <Root level="info">
+            <AppenderRef ref="CONSOLE"/>
+        </Root>
+    </Loggers>
+</Configuration>
