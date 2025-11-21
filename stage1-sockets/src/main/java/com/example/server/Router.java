@@ -63,6 +63,11 @@ public class Router {
      * @return объект {@link Response} c кодом статуса, заголовками и телом ответа
      */
     public Response route(Request request) {
+
+        if (request.getMethod().equals(HttpMethod.OPTIONS)) {
+            return corsNoContent();
+        }
+
         String path = request.getPath();
         if (!path.equals("/") && path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
@@ -83,6 +88,10 @@ public class Router {
 
         logger.warn("Маршрут не найден: {} {}", request.getMethod(), request.getPath());
         return notFound();
+    }
+
+    private Response corsNoContent() {
+        return new Response(HttpStatus.NO_CONTENT, new HashMap<>(), null);
     }
 
     public static Response notFound() {

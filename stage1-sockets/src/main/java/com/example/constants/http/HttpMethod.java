@@ -1,7 +1,7 @@
 package com.example.constants.http;
 
 public enum HttpMethod {
-    GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD;
+    GET, POST, PUT, DELETE, OPTIONS;
 
     public static HttpMethod fromString(String method) {
         try {

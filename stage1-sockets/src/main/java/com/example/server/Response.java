@@ -3,6 +3,7 @@ package com.example.server;
 import com.example.constants.http.HttpStatus;
 import com.example.utils.JsonUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -12,6 +13,11 @@ import java.util.Map;
  * @param body - может быть объектом любого типа, сериализуется в JSON при отправке клиенту
  */
 public record Response(HttpStatus status, Map<String,String> headers, Object body) {
+    public Response {
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
+    }
 
     /**
      * Возвращает тело ответа в виде JSON.

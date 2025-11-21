@@ -6,6 +6,7 @@ import com.example.constants.http.HttpHeaders;
 import com.example.constants.http.HttpMethod;
 import com.example.exceptions.InvalidNoteException;
 import com.example.exceptions.NoteNotFoundException;
+import com.example.utils.CorsUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -102,10 +103,11 @@ public class Server {
         String status = response.status().getCode() + " " + response.status().getMessage();
         out.write("HTTP/1.1 " + status + "\r\n");
         out.write(formatHeader("Date",  new Date().toString()));
-        if (response.headers() != null) {
-            for (var header : response.headers().entrySet()) {
-                out.write(formatHeader(header.getKey(), header.getValue()));
-            }
+
+        CorsUtils.addHeaders(response.headers());
+
+        for (var header : response.headers().entrySet()) {
+            out.write(formatHeader(header.getKey(), header.getValue()));
         }
 
         if (response.body() != null) {
