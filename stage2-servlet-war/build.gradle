@@ -2,5 +2,8 @@ plugins { id 'java'; id 'war' }
 dependencies {
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0' // предоставляет контейнер
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
+    implementation 'org.apache.logging.log4j:log4j-api:2.24.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.24.0'
 }
-tasks.war { archiveFileName = 'ROOT.war' } // деплой на '/'
+tasks.war { archiveFileName = 'pr.war' } // деплой на '/'
