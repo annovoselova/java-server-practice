@@ -4,6 +4,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'io.rest-assured:rest-assured:5.5.0'
     testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
 }
 test {
     useJUnitPlatform()
