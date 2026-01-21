@@ -12,7 +12,7 @@ class NotesApiTest {
     static String BASE, id;
 
     @BeforeAll static void init() {
-        BASE = System.getProperty("baseUrl", "http://localhost:8080");
+        BASE = System.getProperty("baseUrl", "http://localhost:8080") + "/pr/";
     }
 
     @Test @Order(1)
